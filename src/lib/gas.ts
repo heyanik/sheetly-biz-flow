@@ -79,10 +79,49 @@ export type Job = {
 
 export type DashboardStats = {
   employees_total: number;
-  present_today: number;
-  absent_today: number;
   total_stock_yards: number;
-  ink_cost_month: number;
-  yards_printed_month: number;
-  jobs_month: number;
+  ink_used_month_ml: number;
+  ink_remaining_ml: number;
+};
+
+export type Fabric2 = Fabric & { received_date: string };
+
+export type Invoice = {
+  invoice_id: string;
+  date: string;
+  client_name: string;
+  fabric_id: string;
+  yards_printed: number;
+  total_amount: number;
+  notes?: string;
+};
+
+export type InkPurchase = {
+  purchase_id: string;
+  date: string;
+  quantity_ml: number;
+  rate_per_ml: number;
+  total_cost: number;
+  supplier?: string;
+};
+
+export type InkUsage = {
+  usage_id: string;
+  date: string;
+  quantity_ml: number;
+  note?: string;
+};
+
+export type PayrollPreviewRow = {
+  emp_id: string;
+  name: string;
+  role: string;
+  base_salary: number;
+  days_worked: number;
+  gross_salary: number;
+  advance_deduction: number;
+  net_salary: number;
+  outstanding_advance: number;
+  payment_status: string;
+  payroll_id: string;
 };
