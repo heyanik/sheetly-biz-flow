@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { gas, type DashboardStats } from "@/lib/gas";
 import { PageHeader } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserCheck, Package, Droplet, Printer, Scissors } from "lucide-react";
+import { Users, Package, Droplet, FlaskConical } from "lucide-react";
 
 export const Route = createFileRoute("/_app/")({
   head: () => ({ meta: [{ title: "Dashboard — Textile ERP" }] }),
@@ -32,6 +32,15 @@ function Dashboard() {
     refetchInterval: 30_000,
   });
 
+  const cards = data
+    ? [
+        { icon: Users, label: "Total Employees", value: data.employees_total },
+        { icon: Package, label: "Stock Remaining", value: `${data.total_stock_yards.toLocaleString()} yd` },
+        { icon: Droplet, label: "Ink Used (This Month)", value: `${data.ink_used_month_ml.toLocaleString()} ml` },
+        { icon: FlaskConical, label: "Ink Remaining", value: `${data.ink_remaining_ml.toLocaleString()} ml` },
+      ]
+    : [];
+
   return (
     <>
       <PageHeader title="Dashboard" description="Live snapshot of today's operations." />
@@ -40,12 +49,9 @@ function Dashboard() {
         {isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
         {data && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Stat icon={UserCheck} label="Present Today" value={data.present_today} hint={`${data.absent_today} absent`} />
-            <Stat icon={Users} label="Total Employees" value={data.employees_total} />
-            <Stat icon={Package} label="Stock Remaining" value={`${data.total_stock_yards.toLocaleString()} yd`} />
-            <Stat icon={Droplet} label="Ink Cost (This Month)" value={data.ink_cost_month.toLocaleString()} />
-            <Stat icon={Scissors} label="Yards Printed (Month)" value={data.yards_printed_month.toLocaleString()} />
-            <Stat icon={Printer} label="Jobs (Month)" value={data.jobs_month} />
+            {cards.map((c) => (
+              <Stat key={c.label} icon={c.icon} label={c.label} value={c.value} />
+            ))}
           </div>
         )}
       </div>
