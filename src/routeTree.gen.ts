@@ -13,7 +13,9 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppPayrollRouteImport } from './routes/_app.payroll'
+import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
 import { Route as AppInventoryRouteImport } from './routes/_app.inventory'
+import { Route as AppInkRouteImport } from './routes/_app.ink'
 import { Route as AppEmployeesRouteImport } from './routes/_app.employees'
 import { Route as AppAttendanceRouteImport } from './routes/_app.attendance'
 
@@ -36,9 +38,19 @@ const AppPayrollRoute = AppPayrollRouteImport.update({
   path: '/payroll',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInvoicesRoute = AppInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInventoryRoute = AppInventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInkRoute = AppInkRouteImport.update({
+  id: '/ink',
+  path: '/ink',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEmployeesRoute = AppEmployeesRouteImport.update({
@@ -57,14 +69,18 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/attendance': typeof AppAttendanceRoute
   '/employees': typeof AppEmployeesRoute
+  '/ink': typeof AppInkRoute
   '/inventory': typeof AppInventoryRoute
+  '/invoices': typeof AppInvoicesRoute
   '/payroll': typeof AppPayrollRoute
 }
 export interface FileRoutesByTo {
   '/setup': typeof SetupRoute
   '/attendance': typeof AppAttendanceRoute
   '/employees': typeof AppEmployeesRoute
+  '/ink': typeof AppInkRoute
   '/inventory': typeof AppInventoryRoute
+  '/invoices': typeof AppInvoicesRoute
   '/payroll': typeof AppPayrollRoute
   '/': typeof AppIndexRoute
 }
@@ -74,7 +90,9 @@ export interface FileRoutesById {
   '/setup': typeof SetupRoute
   '/_app/attendance': typeof AppAttendanceRoute
   '/_app/employees': typeof AppEmployeesRoute
+  '/_app/ink': typeof AppInkRoute
   '/_app/inventory': typeof AppInventoryRoute
+  '/_app/invoices': typeof AppInvoicesRoute
   '/_app/payroll': typeof AppPayrollRoute
   '/_app/': typeof AppIndexRoute
 }
@@ -85,17 +103,29 @@ export interface FileRouteTypes {
     | '/setup'
     | '/attendance'
     | '/employees'
+    | '/ink'
     | '/inventory'
+    | '/invoices'
     | '/payroll'
   fileRoutesByTo: FileRoutesByTo
-  to: '/setup' | '/attendance' | '/employees' | '/inventory' | '/payroll' | '/'
+  to:
+    | '/setup'
+    | '/attendance'
+    | '/employees'
+    | '/ink'
+    | '/inventory'
+    | '/invoices'
+    | '/payroll'
+    | '/'
   id:
     | '__root__'
     | '/_app'
     | '/setup'
     | '/_app/attendance'
     | '/_app/employees'
+    | '/_app/ink'
     | '/_app/inventory'
+    | '/_app/invoices'
     | '/_app/payroll'
     | '/_app/'
   fileRoutesById: FileRoutesById
@@ -135,11 +165,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPayrollRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/invoices': {
+      id: '/_app/invoices'
+      path: '/invoices'
+      fullPath: '/invoices'
+      preLoaderRoute: typeof AppInvoicesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/inventory': {
       id: '/_app/inventory'
       path: '/inventory'
       fullPath: '/inventory'
       preLoaderRoute: typeof AppInventoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/ink': {
+      id: '/_app/ink'
+      path: '/ink'
+      fullPath: '/ink'
+      preLoaderRoute: typeof AppInkRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/employees': {
@@ -162,7 +206,9 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAttendanceRoute: typeof AppAttendanceRoute
   AppEmployeesRoute: typeof AppEmployeesRoute
+  AppInkRoute: typeof AppInkRoute
   AppInventoryRoute: typeof AppInventoryRoute
+  AppInvoicesRoute: typeof AppInvoicesRoute
   AppPayrollRoute: typeof AppPayrollRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -170,7 +216,9 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAttendanceRoute: AppAttendanceRoute,
   AppEmployeesRoute: AppEmployeesRoute,
+  AppInkRoute: AppInkRoute,
   AppInventoryRoute: AppInventoryRoute,
+  AppInvoicesRoute: AppInvoicesRoute,
   AppPayrollRoute: AppPayrollRoute,
   AppIndexRoute: AppIndexRoute,
 }
@@ -184,3 +232,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
