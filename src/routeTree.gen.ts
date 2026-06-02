@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppPayrollRouteImport } from './routes/_app.payroll'
 import { Route as AppEmployeesRouteImport } from './routes/_app.employees'
 import { Route as AppAttendanceRouteImport } from './routes/_app.attendance'
 
@@ -27,6 +28,11 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPayrollRoute = AppPayrollRouteImport.update({
+  id: '/payroll',
+  path: '/payroll',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEmployeesRoute = AppEmployeesRouteImport.update({
@@ -45,11 +51,13 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/attendance': typeof AppAttendanceRoute
   '/employees': typeof AppEmployeesRoute
+  '/payroll': typeof AppPayrollRoute
 }
 export interface FileRoutesByTo {
   '/setup': typeof SetupRoute
   '/attendance': typeof AppAttendanceRoute
   '/employees': typeof AppEmployeesRoute
+  '/payroll': typeof AppPayrollRoute
   '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -58,19 +66,21 @@ export interface FileRoutesById {
   '/setup': typeof SetupRoute
   '/_app/attendance': typeof AppAttendanceRoute
   '/_app/employees': typeof AppEmployeesRoute
+  '/_app/payroll': typeof AppPayrollRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/setup' | '/attendance' | '/employees'
+  fullPaths: '/' | '/setup' | '/attendance' | '/employees' | '/payroll'
   fileRoutesByTo: FileRoutesByTo
-  to: '/setup' | '/attendance' | '/employees' | '/'
+  to: '/setup' | '/attendance' | '/employees' | '/payroll' | '/'
   id:
     | '__root__'
     | '/_app'
     | '/setup'
     | '/_app/attendance'
     | '/_app/employees'
+    | '/_app/payroll'
     | '/_app/'
   fileRoutesById: FileRoutesById
 }
@@ -102,6 +112,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/payroll': {
+      id: '/_app/payroll'
+      path: '/payroll'
+      fullPath: '/payroll'
+      preLoaderRoute: typeof AppPayrollRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/employees': {
       id: '/_app/employees'
       path: '/employees'
@@ -122,12 +139,14 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAttendanceRoute: typeof AppAttendanceRoute
   AppEmployeesRoute: typeof AppEmployeesRoute
+  AppPayrollRoute: typeof AppPayrollRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAttendanceRoute: AppAttendanceRoute,
   AppEmployeesRoute: AppEmployeesRoute,
+  AppPayrollRoute: AppPayrollRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
