@@ -1,5 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ClipboardCheck, Wallet, Package, FileText, Droplet, Settings } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardCheck, Wallet, Package, FileText, Droplet, Settings, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -8,6 +8,7 @@ const nav = [
   { to: "/attendance", label: "Attendance", icon: ClipboardCheck },
   { to: "/payroll", label: "Payroll", icon: Wallet },
   { to: "/inventory", label: "Inventory", icon: Package },
+  { to: "/clients", label: "Clients", icon: Building2 },
   { to: "/invoices", label: "Invoices", icon: FileText },
   { to: "/ink", label: "Ink", icon: Droplet },
 ] as const;
