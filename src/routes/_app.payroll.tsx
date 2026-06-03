@@ -138,7 +138,7 @@ function PayrollPage() {
         )}
         {hasLoaded && (
           <>
-            <div className="rounded-md border bg-card overflow-auto">
+            <div className="rounded-md border bg-card max-h-[70vh] overflow-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
