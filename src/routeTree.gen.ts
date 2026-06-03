@@ -19,7 +19,6 @@ import { Route as AppInkRouteImport } from './routes/_app.ink'
 import { Route as AppEmployeesRouteImport } from './routes/_app.employees'
 import { Route as AppClientsRouteImport } from './routes/_app.clients'
 import { Route as AppAttendanceRouteImport } from './routes/_app.attendance'
-import { Route as AppClientsRouteImport } from './routes/_app.clients'
 
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
@@ -68,6 +67,11 @@ const AppClientsRoute = AppClientsRouteImport.update({
 const AppAttendanceRoute = AppAttendanceRouteImport.update({
   id: '/attendance',
   path: '/attendance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClientsRoute = AppClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
   getParentRoute: () => AppRoute,
 } as any)
 
