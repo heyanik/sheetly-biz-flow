@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { gas, type Fabric2 } from "@/lib/gas";
 import { PageHeader } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -26,12 +26,16 @@ function InventoryPage() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(0); // 0 = All
+  const [clientFilter, setClientFilter] = useState<string>("__all__");
   const params = { year, ...(month ? { month } : {}) };
 
-  const { data = [], isLoading } = useQuery({
+  const { data: rawData = [], isLoading } = useQuery({
     queryKey: ["inventory", year, month],
     queryFn: () => gas<Fabric2[]>("listInventory", params),
   });
+
+  const clients = useMemo(() => Array.from(new Set(rawData.map(f => f.client_name).filter(Boolean))).sort(), [rawData]);
+  const data = clientFilter === "__all__" ? rawData : rawData.filter(f => f.client_name === clientFilter);
 
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState<Fabric2 | null>(null);
@@ -88,6 +92,16 @@ function InventoryPage() {
                 <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {MONTHS.map((n, i) => <SelectItem key={i} value={String(i)}>{n}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Client</Label>
+              <Select value={clientFilter} onValueChange={setClientFilter}>
+                <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All clients</SelectItem>
+                  {clients.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
