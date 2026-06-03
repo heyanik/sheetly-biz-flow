@@ -90,6 +90,8 @@ export type Invoice = {
   invoice_id: string;
   date: string;
   client_name: string;
+  phone_number?: string;
+  address?: string;
   fabric_id: string;
   yards_printed: number;
   total_amount: number;
