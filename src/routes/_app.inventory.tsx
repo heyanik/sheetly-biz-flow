@@ -115,7 +115,7 @@ function InventoryPage() {
         }
       />
       <div className="p-8">
-        <div className="rounded-md border bg-card">
+        <div className="rounded-md border bg-card max-h-[70vh] overflow-auto">
           <Table>
             <TableHeader>
               <TableRow>
