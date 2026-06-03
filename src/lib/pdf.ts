@@ -30,7 +30,7 @@ export function drawWatermark(doc: jsPDF, logoDataUrl: string) {
     // @ts-ignore
     doc.saveGraphicsState?.();
     // @ts-ignore
-    doc.setGState?.(new (jsPDF as any).GState({ opacity: 0.08 }));
+    doc.setGState?.(new (jsPDF as any).GState({ opacity: 0.04 }));
     doc.addImage(logoDataUrl, "PNG", (w - size) / 2, (h - size) / 2, size, size);
     // @ts-ignore
     doc.restoreGraphicsState?.();
