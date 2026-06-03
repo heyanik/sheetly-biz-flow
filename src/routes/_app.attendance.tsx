@@ -93,7 +93,7 @@ function AttendancePage() {
         {employees.length === 0 ? (
           <div className="text-sm text-muted-foreground">Add employees first.</div>
         ) : (
-          <div className="rounded-md border bg-card max-h-[70vh] overflow-auto">
+          <div className="rounded-md border bg-card max-h-[70vh] overflow-auto [&_thead]:sticky [&_thead]:top-0 [&_thead]:bg-card [&_thead]:z-10">
             <Table>
               <TableHeader>
                 <TableRow>

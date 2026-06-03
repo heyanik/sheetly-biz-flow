@@ -75,7 +75,7 @@ function EmployeesPage() {
         }
       />
       <div className="p-8">
-        <div className="rounded-md border bg-card max-h-[70vh] overflow-auto">
+        <div className="rounded-md border bg-card max-h-[70vh] overflow-auto [&_thead]:sticky [&_thead]:top-0 [&_thead]:bg-card [&_thead]:z-10">
           <Table>
             <TableHeader>
               <TableRow>
