@@ -89,7 +89,7 @@ function InkPage() {
                 </Button>
               </CardContent>
             </Card>
-            <div className="rounded-md border bg-card">
+            <div className="rounded-md border bg-card max-h-[70vh] overflow-auto [&_thead]:sticky [&_thead]:top-0 [&_thead]:bg-card [&_thead]:z-10">
               <Table>
                 <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>Date</TableHead><TableHead>Supplier</TableHead><TableHead className="text-right">Qty (ml)</TableHead><TableHead className="text-right">Rate</TableHead><TableHead className="text-right">Cost</TableHead></TableRow></TableHeader>
                 <TableBody>
@@ -122,7 +122,7 @@ function InkPage() {
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-md border bg-card">
+              <div className="rounded-md border bg-card max-h-[70vh] overflow-auto [&_thead]:sticky [&_thead]:top-0 [&_thead]:bg-card [&_thead]:z-10">
                 <div className="px-4 py-3 border-b text-sm font-medium">Monthly Cost (using avg rate {avgRate.toFixed(2)}/ml)</div>
                 <Table>
                   <TableHeader><TableRow><TableHead>Month</TableHead><TableHead className="text-right">Used (ml)</TableHead><TableHead className="text-right">Cost</TableHead></TableRow></TableHeader>
@@ -138,7 +138,7 @@ function InkPage() {
                   </TableBody>
                 </Table>
               </div>
-              <div className="rounded-md border bg-card">
+              <div className="rounded-md border bg-card max-h-[70vh] overflow-auto [&_thead]:sticky [&_thead]:top-0 [&_thead]:bg-card [&_thead]:z-10">
                 <div className="px-4 py-3 border-b text-sm font-medium">Recent Usage</div>
                 <Table>
                   <TableHeader><TableRow><TableHead>Date</TableHead><TableHead className="text-right">Qty</TableHead><TableHead>Note</TableHead></TableRow></TableHeader>

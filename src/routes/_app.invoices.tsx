@@ -32,7 +32,7 @@ function InvoicesPage() {
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
-    date: today(), client_name: "", fabric_id: "", yards_printed: "", total_amount: "", notes: "",
+    date: today(), client_name: "", phone_number: "", address: "", fabric_id: "", yards_printed: "", total_amount: "", notes: "",
   });
 
   const clientFabrics = fabrics.filter(f => f.client_name === form.client_name);
@@ -47,12 +47,13 @@ function InvoicesPage() {
       toast.success(`Invoice ${d.invoice_id} created`);
       const inv: Invoice = {
         invoice_id: d.invoice_id, date: form.date, client_name: form.client_name,
+        phone_number: form.phone_number, address: form.address,
         fabric_id: form.fabric_id, yards_printed: Number(form.yards_printed),
         total_amount: Number(form.total_amount), notes: form.notes,
       };
       await printInvoicePdf(inv);
       setOpen(false);
-      setForm({ date: today(), client_name: "", fabric_id: "", yards_printed: "", total_amount: "", notes: "" });
+      setForm({ date: today(), client_name: "", phone_number: "", address: "", fabric_id: "", yards_printed: "", total_amount: "", notes: "" });
       qc.invalidateQueries({ queryKey: ["invoices"] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
       qc.invalidateQueries({ queryKey: ["inventory-all"] });
@@ -77,9 +78,17 @@ function InvoicesPage() {
 
     doc.setFontSize(11);
     doc.text(`Bill To: ${inv.client_name}`, 40, 140);
+    doc.setFontSize(10);
+    let yCursor = 156;
+    if (inv.phone_number) { doc.text(`Phone: ${inv.phone_number}`, 40, yCursor); yCursor += 14; }
+    if (inv.address) {
+      const lines = doc.splitTextToSize(`Address: ${inv.address}`, 360);
+      doc.text(lines, 40, yCursor);
+      yCursor += lines.length * 12;
+    }
 
     autoTable(doc, {
-      startY: 170,
+      startY: Math.max(170, yCursor + 10),
       head: [["Description", "Yards", "Amount"]],
       body: [
         [`Textile printing — Fabric ${inv.fabric_id || "—"}`, String(inv.yards_printed), Number(inv.total_amount).toLocaleString()],
@@ -123,6 +132,10 @@ function InvoicesPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>Phone Number</Label><Input value={form.phone_number} onChange={e => setForm({ ...form, phone_number: e.target.value })} /></div>
+                  <div><Label>Address</Label><Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
+                </div>
                 {form.client_name && (
                   <div>
                     <Label>Fabric Lot (optional — deducts stock)</Label>
@@ -154,7 +167,7 @@ function InvoicesPage() {
         }
       />
       <div className="p-8">
-        <div className="rounded-md border bg-card">
+        <div className="rounded-md border bg-card max-h-[70vh] overflow-auto [&_thead]:sticky [&_thead]:top-0 [&_thead]:bg-card [&_thead]:z-10">
           <Table>
             <TableHeader>
               <TableRow>

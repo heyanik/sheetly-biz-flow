@@ -15,7 +15,7 @@ const SHEETS = {
   Payroll:         ['payroll_id','month_year','emp_id','days_worked','base_salary','gross_salary','advance_deduction','net_salary','payment_status','processed_at'],
   Inventory_Master:['fabric_id','client_name','fabric_type','received_date','total_yards_received','total_yards_printed','current_stock_yards','cost_per_yard'],
   Printing_Jobs:   ['job_id','date','fabric_id','client_name','yards_printed','ink_used_ml','ink_cost_per_ml','total_ink_cost'],
-  Invoices:        ['invoice_id','date','client_name','fabric_id','yards_printed','total_amount','notes'],
+  Invoices:        ['invoice_id','date','client_name','phone_number','address','fabric_id','yards_printed','total_amount','notes'],
   Ink_Purchases:   ['purchase_id','date','quantity_ml','rate_per_ml','total_cost','supplier'],
   Ink_Usage:       ['usage_id','date','quantity_ml','note'],
 };
@@ -332,6 +332,8 @@ const ACTIONS = {
       invoice_id: invoice_id,
       date: p.date || ymd_(new Date()),
       client_name: p.client_name,
+      phone_number: p.phone_number||'',
+      address: p.address||'',
       fabric_id: p.fabric_id||'',
       yards_printed: yards,
       total_amount: Number(p.total_amount)||0,

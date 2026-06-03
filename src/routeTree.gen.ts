@@ -17,6 +17,7 @@ import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
 import { Route as AppInventoryRouteImport } from './routes/_app.inventory'
 import { Route as AppInkRouteImport } from './routes/_app.ink'
 import { Route as AppEmployeesRouteImport } from './routes/_app.employees'
+import { Route as AppClientsRouteImport } from './routes/_app.clients'
 import { Route as AppAttendanceRouteImport } from './routes/_app.attendance'
 
 const SetupRoute = SetupRouteImport.update({
@@ -58,6 +59,11 @@ const AppEmployeesRoute = AppEmployeesRouteImport.update({
   path: '/employees',
   getParentRoute: () => AppRoute,
 } as any)
+const AppClientsRoute = AppClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAttendanceRoute = AppAttendanceRouteImport.update({
   id: '/attendance',
   path: '/attendance',
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/setup': typeof SetupRoute
   '/attendance': typeof AppAttendanceRoute
+  '/clients': typeof AppClientsRoute
   '/employees': typeof AppEmployeesRoute
   '/ink': typeof AppInkRoute
   '/inventory': typeof AppInventoryRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/setup': typeof SetupRoute
   '/attendance': typeof AppAttendanceRoute
+  '/clients': typeof AppClientsRoute
   '/employees': typeof AppEmployeesRoute
   '/ink': typeof AppInkRoute
   '/inventory': typeof AppInventoryRoute
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/setup': typeof SetupRoute
   '/_app/attendance': typeof AppAttendanceRoute
+  '/_app/clients': typeof AppClientsRoute
   '/_app/employees': typeof AppEmployeesRoute
   '/_app/ink': typeof AppInkRoute
   '/_app/inventory': typeof AppInventoryRoute
@@ -102,6 +111,7 @@ export interface FileRouteTypes {
     | '/'
     | '/setup'
     | '/attendance'
+    | '/clients'
     | '/employees'
     | '/ink'
     | '/inventory'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
   to:
     | '/setup'
     | '/attendance'
+    | '/clients'
     | '/employees'
     | '/ink'
     | '/inventory'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/setup'
     | '/_app/attendance'
+    | '/_app/clients'
     | '/_app/employees'
     | '/_app/ink'
     | '/_app/inventory'
@@ -193,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEmployeesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/clients': {
+      id: '/_app/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof AppClientsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/attendance': {
       id: '/_app/attendance'
       path: '/attendance'
@@ -205,6 +224,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAttendanceRoute: typeof AppAttendanceRoute
+  AppClientsRoute: typeof AppClientsRoute
   AppEmployeesRoute: typeof AppEmployeesRoute
   AppInkRoute: typeof AppInkRoute
   AppInventoryRoute: typeof AppInventoryRoute
@@ -215,6 +235,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAttendanceRoute: AppAttendanceRoute,
+  AppClientsRoute: AppClientsRoute,
   AppEmployeesRoute: AppEmployeesRoute,
   AppInkRoute: AppInkRoute,
   AppInventoryRoute: AppInventoryRoute,
