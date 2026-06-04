@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Banknote, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { optimisticAppend, optimisticRemove, optimisticUpdate, tempId } from "@/lib/optimistic";
 
 export const Route = createFileRoute("/_app/employees")({
   head: () => ({ meta: [{ title: "Employees — Textile ERP" }] }),
@@ -26,26 +27,42 @@ function EmployeesPage() {
 
   const addMut = useMutation({
     mutationFn: () => gas("addEmployee", { ...form, base_salary: Number(form.base_salary) }),
-    onSuccess: () => {
-      toast.success("Employee added");
+    onMutate: async () => {
+      const optimistic: Employee = {
+        emp_id: tempId("EMP"), name: form.name, role: form.role,
+        base_salary: Number(form.base_salary) || 0,
+        total_advance_given: 0, total_advance_deducted: 0,
+      };
       setOpen(false); setForm({ name: "", role: "", base_salary: "" });
-      qc.invalidateQueries({ queryKey: ["employees"] });
+      toast.success("Employee added");
+      return await optimisticAppend<Employee>(qc, ["employees"], optimistic);
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any, _v, ctx) => { qc.setQueryData(["employees"], ctx?.prev); toast.error(e.message); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["employees"] }),
   });
   const advMut = useMutation({
     mutationFn: () => gas("addEmployeeAdvance", { emp_id: advOpen!.emp_id, amount: Number(advAmount) }),
-    onSuccess: () => {
-      toast.success("Advance recorded");
+    onMutate: async () => {
+      if (!advOpen) return;
+      const emp = advOpen;
+      const amt = Number(advAmount) || 0;
       setAdvOpen(null); setAdvAmount("");
-      qc.invalidateQueries({ queryKey: ["employees"] });
+      toast.success("Advance recorded");
+      return await optimisticUpdate<Employee>(qc, ["employees"], "emp_id", emp.emp_id, {
+        total_advance_given: Number(emp.total_advance_given || 0) + amt,
+      });
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["employees"], ctx.prev); toast.error(e.message); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["employees"] }),
   });
   const delMut = useMutation({
     mutationFn: (emp_id: string) => gas("deleteEmployee", { emp_id }),
-    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["employees"] }); },
-    onError: (e: any) => toast.error(e.message),
+    onMutate: async (emp_id: string) => {
+      toast.success("Removed");
+      return await optimisticRemove<Employee>(qc, ["employees"], "emp_id", emp_id);
+    },
+    onError: (e: any, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["employees"], ctx.prev); toast.error(e.message); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["employees"] }),
   });
 
   return (

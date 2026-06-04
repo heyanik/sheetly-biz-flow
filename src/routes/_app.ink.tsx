@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+import { optimisticAppend, tempId } from "@/lib/optimistic";
 
 export const Route = createFileRoute("/_app/ink")({
   head: () => ({ meta: [{ title: "Ink — Textile ERP" }] }),
@@ -41,24 +42,41 @@ function InkPage() {
 
   const purchaseMut = useMutation({
     mutationFn: () => gas("addInkPurchase", { ...pForm, quantity_ml: Number(pForm.quantity_ml), rate_per_ml: Number(pForm.rate_per_ml) }),
-    onSuccess: () => {
-      toast.success("Ink purchase recorded");
+    onMutate: async () => {
+      const qty = Number(pForm.quantity_ml) || 0;
+      const rate = Number(pForm.rate_per_ml) || 0;
+      const optimistic: InkPurchase = {
+        purchase_id: tempId("INKP"), date: pForm.date,
+        quantity_ml: qty, rate_per_ml: rate, total_cost: qty * rate,
+        supplier: pForm.supplier,
+      };
       setPForm({ date: today(), quantity_ml: "", rate_per_ml: "", supplier: "" });
+      toast.success("Ink purchase recorded");
+      return await optimisticAppend<InkPurchase>(qc, ["ink-purchases"], optimistic);
+    },
+    onError: (e: any, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["ink-purchases"], ctx.prev); toast.error(e.message); },
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["ink-purchases"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
-    onError: (e: any) => toast.error(e.message),
   });
 
   const usageMut = useMutation({
     mutationFn: () => gas("addInkUsage", { ...uForm, quantity_ml: Number(uForm.quantity_ml) }),
-    onSuccess: () => {
-      toast.success("Ink usage recorded");
+    onMutate: async () => {
+      const optimistic: InkUsage = {
+        usage_id: tempId("INKU"), date: uForm.date,
+        quantity_ml: Number(uForm.quantity_ml) || 0, note: uForm.note,
+      };
       setUForm({ date: today(), quantity_ml: "", note: "" });
+      toast.success("Ink usage recorded");
+      return await optimisticAppend<InkUsage>(qc, ["ink-usage"], optimistic);
+    },
+    onError: (e: any, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["ink-usage"], ctx.prev); toast.error(e.message); },
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["ink-usage"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
-    onError: (e: any) => toast.error(e.message),
   });
 
   return (

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { optimisticAppend, optimisticUpdate, tempId } from "@/lib/optimistic";
 
 export const Route = createFileRoute("/_app/inventory")({
   head: () => ({ meta: [{ title: "Inventory — Textile ERP" }] }),
@@ -47,14 +48,27 @@ function InventoryPage() {
       total_yards_received: Number(form.total_yards_received),
       total_yards_printed: Number(form.total_yards_printed),
     }),
-    onSuccess: () => {
-      toast.success("Fabric added");
+    onMutate: async () => {
+      const rec = Number(form.total_yards_received) || 0;
+      const pr = Number(form.total_yards_printed) || 0;
+      const optimistic: Fabric2 = {
+        fabric_id: tempId("FAB"),
+        client_name: form.client_name, fabric_type: form.fabric_type,
+        received_date: form.received_date,
+        total_yards_received: rec, total_yards_printed: pr,
+        current_stock_yards: rec - pr, cost_per_yard: 0,
+      };
       setOpen(false);
       setForm({ client_name: "", fabric_type: "White", total_yards_received: "", total_yards_printed: "0", received_date: today() });
+      toast.success("Fabric added");
+      return await optimisticAppend<Fabric2>(qc, ["inventory", year, month], optimistic);
+    },
+    onError: (e: any, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["inventory", year, month], ctx.prev); toast.error(e.message); },
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["inventory"] });
+      qc.invalidateQueries({ queryKey: ["inventory-all"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
-    onError: (e: any) => toast.error(e.message),
   });
 
   const editMut = useMutation({
@@ -66,13 +80,27 @@ function InventoryPage() {
       total_yards_received: Number(editRow!.total_yards_received),
       total_yards_printed: Number(editRow!.total_yards_printed),
     }),
-    onSuccess: () => {
-      toast.success("Updated");
+    onMutate: async () => {
+      if (!editRow) return;
+      const rec = Number(editRow.total_yards_received) || 0;
+      const pr = Number(editRow.total_yards_printed) || 0;
+      const patch: Partial<Fabric2> = {
+        client_name: editRow.client_name, fabric_type: editRow.fabric_type,
+        received_date: editRow.received_date,
+        total_yards_received: rec, total_yards_printed: pr,
+        current_stock_yards: rec - pr,
+      };
+      const id = editRow.fabric_id;
       setEditRow(null);
+      toast.success("Updated");
+      return await optimisticUpdate<Fabric2>(qc, ["inventory", year, month], "fabric_id", id, patch);
+    },
+    onError: (e: any, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["inventory", year, month], ctx.prev); toast.error(e.message); },
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["inventory"] });
+      qc.invalidateQueries({ queryKey: ["inventory-all"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
-    onError: (e: any) => toast.error(e.message),
   });
 
   return (
