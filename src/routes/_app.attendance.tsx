@@ -185,7 +185,7 @@ function CalendarDialog({
         .map(([date, status]) => ({ date, emp_id: employee!.emp_id, status, remarks: "" }));
       return gas("bulkAddAttendance", { entries });
     },
-    onSuccess: () => { toast.success("Attendance saved"); onSaved(); onClose(); },
+    onMutate: () => { toast.success("Attendance saved"); onSaved(); onClose(); },
     onError: (e: any) => toast.error(e.message),
   });
 

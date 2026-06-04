@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { COMPANY_NAME, autoTable, drawWatermark, loadLogoDataUrl, newDoc } from "@/lib/pdf";
+import { optimisticAppend, tempId } from "@/lib/optimistic";
 
 export const Route = createFileRoute("/_app/invoices")({
   head: () => ({ meta: [{ title: "Invoices — Textile ERP" }] }),
@@ -43,6 +44,16 @@ function InvoicesPage() {
       yards_printed: Number(form.yards_printed),
       total_amount: Number(form.total_amount),
     }),
+    onMutate: async () => {
+      const optimistic: Invoice = {
+        invoice_id: tempId("INV"), date: form.date, client_name: form.client_name,
+        phone_number: form.phone_number, address: form.address,
+        fabric_id: form.fabric_id, yards_printed: Number(form.yards_printed) || 0,
+        total_amount: Number(form.total_amount) || 0, notes: form.notes,
+      };
+      toast.success("Invoice created");
+      return await optimisticAppend<Invoice>(qc, ["invoices"], optimistic);
+    },
     onSuccess: async (d) => {
       toast.success(`Invoice ${d.invoice_id} created`);
       const inv: Invoice = {
@@ -54,12 +65,14 @@ function InvoicesPage() {
       await printInvoicePdf(inv);
       setOpen(false);
       setForm({ date: today(), client_name: "", phone_number: "", address: "", fabric_id: "", yards_printed: "", total_amount: "", notes: "" });
+    },
+    onError: (e: any, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["invoices"], ctx.prev); toast.error(e.message); },
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["invoices"] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
       qc.invalidateQueries({ queryKey: ["inventory-all"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
-    onError: (e: any) => toast.error(e.message),
   });
 
   async function printInvoicePdf(inv: Invoice) {
