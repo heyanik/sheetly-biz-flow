@@ -40,29 +40,13 @@ function Setup() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Textile ERP — Setup</h1>
           <p className="text-muted-foreground mt-2">
-            One-time backend setup. Deploy the Apps Script then paste the Web App URL below.
+            Paste your Google Apps Script Web App URL to connect.
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>1. Deploy the backend</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <ol className="list-decimal pl-5 space-y-2">
-              <li>Create a new Google Sheet (any blank sheet works).</li>
-              <li>Open <span className="font-mono">Extensions → Apps Script</span>.</li>
-              <li>Delete the default code and paste the contents of <span className="font-mono">Code.gs</span> (provided in chat).</li>
-              <li>Click <span className="font-mono">Deploy → New deployment → Web app</span>.</li>
-              <li>Execute as: <b>Me</b>. Who has access: <b>Anyone</b>. Click Deploy and authorize.</li>
-              <li>Copy the <span className="font-mono">/exec</span> URL and paste it below.</li>
-            </ol>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>2. Connect</CardTitle>
+            <CardTitle>Connect</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Input

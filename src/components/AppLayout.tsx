@@ -56,6 +56,13 @@ export function AppLayout() {
       <main className="flex-1 min-w-0 overflow-x-hidden">
         <Outlet />
       </main>
+      <a
+        href="#"
+        onClick={(e) => e.preventDefault()}
+        className="fixed bottom-3 right-3 z-50 rounded-full bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium shadow-md hover:shadow-lg transition"
+      >
+        Built By Anik
+      </a>
     </div>
   );
 }

@@ -230,7 +230,7 @@ const ACTIONS = {
       var emp = empMap[row.emp_id];
       if (emp) {
         var prev = Number(prevByEmp[row.emp_id]||0);
-        var newDeducted = Number(emp.total_advance_deducted||0) - prev + Number(row.advance_deduction)||0;
+        var newDeducted = Number(emp.total_advance_deducted||0) - prev + (Number(row.advance_deduction)||0);
         updateRowById_('Employees','emp_id',row.emp_id,{ total_advance_deducted: newDeducted });
         emp.total_advance_deducted = newDeducted;
       }
