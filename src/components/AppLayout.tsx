@@ -1,6 +1,7 @@
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ClipboardCheck, Wallet, Package, FileText, Droplet, Settings, Building2 } from "lucide-react";
+import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { LayoutDashboard, Users, ClipboardCheck, Wallet, Package, FileText, Droplet, Settings, Building2, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { clearSession, getSession } from "@/lib/auth";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -15,6 +16,8 @@ const nav = [
 
 export function AppLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const session = typeof window !== "undefined" ? getSession() : null;
   return (
     <div className="min-h-screen bg-background text-foreground flex">
       <aside className="w-60 border-r bg-card flex flex-col">
@@ -51,6 +54,16 @@ export function AppLayout() {
             <Settings className="size-4" />
             Setup
           </Link>
+          {session && (
+            <button
+              onClick={() => { clearSession(); navigate({ to: "/login" }); }}
+              className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <LogOut className="size-4" />
+              <span className="flex-1 text-left">Log out</span>
+              <span className="text-[10px] uppercase tracking-wide">{session.username}</span>
+            </button>
+          )}
         </div>
       </aside>
       <main className="flex-1 min-w-0 overflow-x-hidden">
