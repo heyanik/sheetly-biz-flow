@@ -101,6 +101,7 @@ export type Invoice = {
 export type InkPurchase = {
   purchase_id: string;
   date: string;
+  color?: string;
   quantity_ml: number;
   rate_per_ml: number;
   total_cost: number;
@@ -110,6 +111,7 @@ export type InkPurchase = {
 export type InkUsage = {
   usage_id: string;
   date: string;
+  color?: string;
   quantity_ml: number;
   note?: string;
 };

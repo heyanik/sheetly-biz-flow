@@ -9,9 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { optimisticAppend, optimisticUpdate, tempId } from "@/lib/optimistic";
+import { optimisticAppend, optimisticRemove, optimisticUpdate, tempId } from "@/lib/optimistic";
 
 export const Route = createFileRoute("/_app/inventory")({
   head: () => ({ meta: [{ title: "Inventory — Textile ERP" }] }),
@@ -103,6 +103,20 @@ function InventoryPage() {
     },
   });
 
+  const delMut = useMutation({
+    mutationFn: (fabric_id: string) => gas("deleteFabric", { fabric_id }),
+    onMutate: async (id: string) => {
+      toast.success("Removed");
+      return await optimisticRemove<Fabric2>(qc, ["inventory", year, month], "fabric_id", id);
+    },
+    onError: (e: any, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["inventory", year, month], ctx.prev); toast.error(e.message); },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["inventory"] });
+      qc.invalidateQueries({ queryKey: ["inventory-all"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+
   return (
     <>
       <PageHeader
@@ -185,6 +199,9 @@ function InventoryPage() {
                   <TableCell className="text-right font-semibold">{Number(f.current_stock_yards).toLocaleString()}</TableCell>
                   <TableCell className="text-right">
                     <Button size="sm" variant="ghost" onClick={() => setEditRow({ ...f })}><Pencil className="size-4" /></Button>
+                    <Button size="sm" variant="ghost" onClick={() => { if (confirm(`Delete fabric ${f.fabric_id}?`)) delMut.mutate(f.fabric_id); }}>
+                      <Trash2 className="size-4 text-destructive" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
