@@ -9,10 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Printer } from "lucide-react";
+import { Plus, Printer, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { COMPANY_NAME, autoTable, drawWatermark, loadLogoDataUrl, newDoc } from "@/lib/pdf";
-import { optimisticAppend, tempId } from "@/lib/optimistic";
+import { optimisticAppend, optimisticRemove, tempId } from "@/lib/optimistic";
 
 export const Route = createFileRoute("/_app/invoices")({
   head: () => ({ meta: [{ title: "Invoices — Textile ERP" }] }),
@@ -73,6 +73,16 @@ function InvoicesPage() {
       qc.invalidateQueries({ queryKey: ["inventory-all"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
+  });
+
+  const delMut = useMutation({
+    mutationFn: (invoice_id: string) => gas("deleteInvoice", { invoice_id }),
+    onMutate: async (id: string) => {
+      toast.success("Removed");
+      return await optimisticRemove<Invoice>(qc, ["invoices"], "invoice_id", id);
+    },
+    onError: (e: any, _v, ctx: any) => { if (ctx?.prev) qc.setQueryData(["invoices"], ctx.prev); toast.error(e.message); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["invoices"] }),
   });
 
   async function printInvoicePdf(inv: Invoice) {
@@ -204,6 +214,9 @@ function InvoicesPage() {
                   <TableCell className="text-right font-semibold">{Number(inv.total_amount).toLocaleString()}</TableCell>
                   <TableCell className="text-right">
                     <Button size="sm" variant="ghost" onClick={() => printInvoicePdf(inv)}><Printer className="size-4" /></Button>
+                    <Button size="sm" variant="ghost" onClick={() => { if (confirm(`Delete invoice ${inv.invoice_id}?`)) delMut.mutate(inv.invoice_id); }}>
+                      <Trash2 className="size-4 text-destructive" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
