@@ -16,8 +16,9 @@ const SHEETS = {
   Inventory_Master:['fabric_id','client_name','fabric_type','received_date','total_yards_received','total_yards_printed','current_stock_yards','cost_per_yard'],
   Printing_Jobs:   ['job_id','date','fabric_id','client_name','yards_printed','ink_used_ml','ink_cost_per_ml','total_ink_cost'],
   Invoices:        ['invoice_id','date','client_name','phone_number','address','fabric_id','yards_printed','total_amount','notes'],
-  Ink_Purchases:   ['purchase_id','date','quantity_ml','rate_per_ml','total_cost','supplier'],
-  Ink_Usage:       ['usage_id','date','quantity_ml','note'],
+  Ink_Purchases:   ['purchase_id','date','color','quantity_ml','rate_per_ml','total_cost','supplier'],
+  Ink_Usage:       ['usage_id','date','color','quantity_ml','note'],
+  Users:           ['username','password_hash','role','created_at'],
 };
 
 function ensureSheets_() {
