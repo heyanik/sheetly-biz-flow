@@ -354,6 +354,7 @@ const ACTIONS = {
     appendRow_('Ink_Purchases', {
       purchase_id: purchase_id,
       date: p.date || ymd_(new Date()),
+      color: p.color || '',
       quantity_ml: qty, rate_per_ml: rate,
       total_cost: qty*rate,
       supplier: p.supplier||'',
@@ -368,11 +369,39 @@ const ACTIONS = {
     appendRow_('Ink_Usage', {
       usage_id: usage_id,
       date: p.date || ymd_(new Date()),
+      color: p.color || '',
       quantity_ml: Number(p.quantity_ml)||0,
       note: p.note||'',
     });
     return { usage_id: usage_id };
   },
+  deleteInkPurchase: function (p) { deleteRowById_('Ink_Purchases','purchase_id',p.purchase_id); return { ok:true }; },
+  deleteInkUsage:    function (p) { deleteRowById_('Ink_Usage','usage_id',p.usage_id); return { ok:true }; },
+  deleteFabric:      function (p) { deleteRowById_('Inventory_Master','fabric_id',p.fabric_id); return { ok:true }; },
+  deleteInvoice:     function (p) { deleteRowById_('Invoices','invoice_id',p.invoice_id); return { ok:true }; },
+
+  listUsers: function () {
+    return rows_('Users').map(function (u) { return { username: u.username, role: u.role || 'user', created_at: ymd_(u.created_at) }; });
+  },
+  registerUser: function (p) {
+    if (!p.username || !p.password) throw new Error('Username and password required');
+    var existing = rows_('Users');
+    if (existing.some(function (u) { return String(u.username).toLowerCase() === String(p.username).toLowerCase(); })) {
+      throw new Error('Username already exists');
+    }
+    var role = existing.length === 0 ? 'admin' : (p.role || 'user');
+    appendRow_('Users', { username: p.username, password_hash: sha256_(p.password), role: role, created_at: new Date() });
+    return { ok:true, username: p.username, role: role };
+  },
+  loginUser: function (p) {
+    var users = rows_('Users');
+    if (users.length === 0) throw new Error('No users registered. Create the first user in Setup.');
+    var u = users.find(function (x) { return String(x.username).toLowerCase() === String(p.username||'').toLowerCase(); });
+    if (!u) throw new Error('Invalid username or password');
+    if (String(u.password_hash) !== sha256_(p.password||'')) throw new Error('Invalid username or password');
+    return { ok:true, username: u.username, role: u.role || 'user', token: sha256_(u.username + '|' + u.password_hash) };
+  },
+  deleteUser: function (p) { deleteRowById_('Users','username',p.username); return { ok:true }; },
 
   // ---------------- Dashboard ----------------
   dashboard: function () {
