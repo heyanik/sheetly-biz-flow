@@ -214,7 +214,7 @@ function InkPage() {
                 </div>
                 <div><Label>Quantity Used (ml)</Label><Input type="number" value={uForm.quantity_ml} onChange={e => setUForm({ ...uForm, quantity_ml: e.target.value })} /></div>
                 <div><Label>Note</Label><Input value={uForm.note} onChange={e => setUForm({ ...uForm, note: e.target.value })} /></div>
-                <Button onClick={() => usageMut.mutate()} disabled={!uForm.quantity_ml || !uForm.color || usageMut.isPending}>
+                <Button onClick={() => usageMut.mutate({ date: uForm.date, color: uForm.color, quantity_ml: Number(uForm.quantity_ml) || 0, note: uForm.note })} disabled={!uForm.quantity_ml || !uForm.color || usageMut.isPending}>
                   {usageMut.isPending ? "Saving…" : "Add Usage"}
                 </Button>
               </CardContent>
