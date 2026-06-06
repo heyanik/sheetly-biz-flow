@@ -43,18 +43,14 @@ function InventoryPage() {
   const [form, setForm] = useState({ client_name: "", fabric_type: "White", total_yards_received: "", total_yards_printed: "0", received_date: today() });
 
   const addMut = useMutation({
-    mutationFn: () => gas("addFabric", {
-      ...form,
-      total_yards_received: Number(form.total_yards_received),
-      total_yards_printed: Number(form.total_yards_printed),
-    }),
-    onMutate: async () => {
-      const rec = Number(form.total_yards_received) || 0;
-      const pr = Number(form.total_yards_printed) || 0;
+    mutationFn: (input: { client_name: string; fabric_type: string; received_date: string; total_yards_received: number; total_yards_printed: number }) => gas("addFabric", input),
+    onMutate: async (input) => {
+      const rec = Number(input.total_yards_received) || 0;
+      const pr = Number(input.total_yards_printed) || 0;
       const optimistic: Fabric2 = {
         fabric_id: tempId("FAB"),
-        client_name: form.client_name, fabric_type: form.fabric_type,
-        received_date: form.received_date,
+        client_name: input.client_name, fabric_type: input.fabric_type,
+        received_date: input.received_date,
         total_yards_received: rec, total_yards_printed: pr,
         current_stock_yards: rec - pr, cost_per_yard: 0,
       };
@@ -72,25 +68,17 @@ function InventoryPage() {
   });
 
   const editMut = useMutation({
-    mutationFn: () => gas("updateFabric", {
-      fabric_id: editRow!.fabric_id,
-      client_name: editRow!.client_name,
-      fabric_type: editRow!.fabric_type,
-      received_date: editRow!.received_date,
-      total_yards_received: Number(editRow!.total_yards_received),
-      total_yards_printed: Number(editRow!.total_yards_printed),
-    }),
-    onMutate: async () => {
-      if (!editRow) return;
-      const rec = Number(editRow.total_yards_received) || 0;
-      const pr = Number(editRow.total_yards_printed) || 0;
+    mutationFn: (input: { fabric_id: string; client_name: string; fabric_type: string; received_date: string; total_yards_received: number; total_yards_printed: number }) => gas("updateFabric", input),
+    onMutate: async (input) => {
+      const rec = Number(input.total_yards_received) || 0;
+      const pr = Number(input.total_yards_printed) || 0;
       const patch: Partial<Fabric2> = {
-        client_name: editRow.client_name, fabric_type: editRow.fabric_type,
-        received_date: editRow.received_date,
+        client_name: input.client_name, fabric_type: input.fabric_type,
+        received_date: input.received_date,
         total_yards_received: rec, total_yards_printed: pr,
         current_stock_yards: rec - pr,
       };
-      const id = editRow.fabric_id;
+      const id = input.fabric_id;
       setEditRow(null);
       toast.success("Updated");
       return await optimisticUpdate<Fabric2>(qc, ["inventory", year, month], "fabric_id", id, patch);
@@ -161,7 +149,7 @@ function InventoryPage() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={() => addMut.mutate()} disabled={!form.client_name || !form.total_yards_received || addMut.isPending}>
+                  <Button onClick={() => addMut.mutate({ client_name: form.client_name, fabric_type: form.fabric_type, received_date: form.received_date, total_yards_received: Number(form.total_yards_received) || 0, total_yards_printed: Number(form.total_yards_printed) || 0 })} disabled={!form.client_name || !form.total_yards_received || addMut.isPending}>
                     {addMut.isPending ? "Saving…" : "Save"}
                   </Button>
                 </DialogFooter>
