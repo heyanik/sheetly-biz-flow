@@ -38,16 +38,7 @@ function PayrollPage() {
   useEffect(() => { setHasLoaded(false); setRows([]); }, [monthYear]);
 
   const saveMut = useMutation({
-    mutationFn: () => gas("savePayroll", {
-      month_year: monthYear,
-      rows: rows.map(r => ({
-        emp_id: r.emp_id,
-        days_worked: r.days_worked,
-        gross_salary: r.gross_salary,
-        advance_deduction: r.advance_deduction,
-        net_salary: r.net_salary,
-      })),
-    }),
+    mutationFn: (input: { month_year: string; rows: Pick<PayrollPreviewRow, "emp_id" | "days_worked" | "gross_salary" | "advance_deduction" | "net_salary">[] }) => gas("savePayroll", input),
     onSuccess: () => {
       toast.success("Payroll saved");
       qc.invalidateQueries({ queryKey: ["employees"] });
@@ -183,7 +174,7 @@ function PayrollPage() {
               <div className="flex gap-2">
                 <Button variant="outline" onClick={exportExcel} disabled={!rows.length}>Export Excel</Button>
                 <Button variant="outline" onClick={printPdf} disabled={!rows.length}>Print PDF</Button>
-                <Button onClick={() => saveMut.mutate()} disabled={!rows.length || saveMut.isPending}>
+                <Button onClick={() => saveMut.mutate({ month_year: monthYear, rows: rows.map(r => ({ emp_id: r.emp_id, days_worked: r.days_worked, gross_salary: r.gross_salary, advance_deduction: r.advance_deduction, net_salary: r.net_salary })) })} disabled={!rows.length || saveMut.isPending}>
                   {saveMut.isPending ? "Saving…" : "Save Payroll"}
                 </Button>
               </div>

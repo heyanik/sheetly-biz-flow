@@ -179,12 +179,7 @@ function CalendarDialog({
   }, [open, employee, year, month, rows]);
 
   const saveMut = useMutation({
-    mutationFn: () => {
-      const entries = Object.entries(cells)
-        .filter(([, s]) => s !== "")
-        .map(([date, status]) => ({ date, emp_id: employee!.emp_id, status, remarks: "" }));
-      return gas("bulkAddAttendance", { entries });
-    },
+    mutationFn: (entries: { date: string; emp_id: string; status: Status; remarks: string }[]) => gas("bulkAddAttendance", { entries }),
     onMutate: () => { toast.success("Attendance saved"); onSaved(); onClose(); },
     onError: (e: any) => toast.error(e.message),
   });
@@ -235,7 +230,7 @@ function CalendarDialog({
         )}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
+          <Button onClick={() => saveMut.mutate(Object.entries(cells).filter(([, s]) => s !== "").map(([date, status]) => ({ date, emp_id: employee.emp_id, status, remarks: "" })))} disabled={saveMut.isPending}>
             {saveMut.isPending ? "Saving…" : "Save Attendance"}
           </Button>
         </DialogFooter>

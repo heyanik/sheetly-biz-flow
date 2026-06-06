@@ -68,19 +68,15 @@ function InkPage() {
   const [usageColorFilter, setUsageColorFilter] = useState<string>("__all__");
 
   const purchaseMut = useMutation({
-    mutationFn: () => {
-      const color = pForm.color === "Other" ? pForm.color_other : pForm.color;
-      return gas("addInkPurchase", { ...pForm, color, quantity_ml: Number(pForm.quantity_ml), rate_per_ml: Number(pForm.rate_per_ml) });
-    },
-    onMutate: async () => {
-      const qty = Number(pForm.quantity_ml) || 0;
-      const rate = Number(pForm.rate_per_ml) || 0;
-      const color = pForm.color === "Other" ? pForm.color_other : pForm.color;
+    mutationFn: (input: { date: string; color: string; quantity_ml: number; rate_per_ml: number; supplier: string }) => gas("addInkPurchase", input),
+    onMutate: async (input) => {
+      const qty = Number(input.quantity_ml) || 0;
+      const rate = Number(input.rate_per_ml) || 0;
       const optimistic: InkPurchase = {
-        purchase_id: tempId("INKP"), date: pForm.date,
-        color,
+        purchase_id: tempId("INKP"), date: input.date,
+        color: input.color,
         quantity_ml: qty, rate_per_ml: rate, total_cost: qty * rate,
-        supplier: pForm.supplier,
+        supplier: input.supplier,
       };
       setPForm({ date: today(), color: "", color_other: "", quantity_ml: "", rate_per_ml: "", supplier: "" });
       toast.success("Ink purchase recorded");
@@ -94,11 +90,11 @@ function InkPage() {
   });
 
   const usageMut = useMutation({
-    mutationFn: () => gas("addInkUsage", { ...uForm, quantity_ml: Number(uForm.quantity_ml) }),
-    onMutate: async () => {
+    mutationFn: (input: { date: string; color: string; quantity_ml: number; note: string }) => gas("addInkUsage", input),
+    onMutate: async (input) => {
       const optimistic: InkUsage = {
-        usage_id: tempId("INKU"), date: uForm.date, color: uForm.color,
-        quantity_ml: Number(uForm.quantity_ml) || 0, note: uForm.note,
+        usage_id: tempId("INKU"), date: input.date, color: input.color,
+        quantity_ml: Number(input.quantity_ml) || 0, note: input.note,
       };
       setUForm({ date: today(), color: "", quantity_ml: "", note: "" });
       toast.success("Ink usage recorded");
@@ -171,7 +167,7 @@ function InkPage() {
                 <div><Label>Quantity (ml)</Label><Input type="number" value={pForm.quantity_ml} onChange={e => setPForm({ ...pForm, quantity_ml: e.target.value })} /></div>
                 <div><Label>Rate / ml</Label><Input type="number" value={pForm.rate_per_ml} onChange={e => setPForm({ ...pForm, rate_per_ml: e.target.value })} /></div>
                 <div><Label>Supplier</Label><Input value={pForm.supplier} onChange={e => setPForm({ ...pForm, supplier: e.target.value })} /></div>
-                <Button onClick={() => purchaseMut.mutate()} disabled={!pForm.quantity_ml || !pForm.rate_per_ml || !pForm.color || (pForm.color === "Other" && !pForm.color_other) || purchaseMut.isPending}>
+                <Button onClick={() => purchaseMut.mutate({ date: pForm.date, color: pForm.color === "Other" ? pForm.color_other : pForm.color, quantity_ml: Number(pForm.quantity_ml) || 0, rate_per_ml: Number(pForm.rate_per_ml) || 0, supplier: pForm.supplier })} disabled={!pForm.quantity_ml || !pForm.rate_per_ml || !pForm.color || (pForm.color === "Other" && !pForm.color_other) || purchaseMut.isPending}>
                   {purchaseMut.isPending ? "Saving…" : "Add Purchase"}
                 </Button>
               </CardContent>
@@ -218,7 +214,7 @@ function InkPage() {
                 </div>
                 <div><Label>Quantity Used (ml)</Label><Input type="number" value={uForm.quantity_ml} onChange={e => setUForm({ ...uForm, quantity_ml: e.target.value })} /></div>
                 <div><Label>Note</Label><Input value={uForm.note} onChange={e => setUForm({ ...uForm, note: e.target.value })} /></div>
-                <Button onClick={() => usageMut.mutate()} disabled={!uForm.quantity_ml || !uForm.color || usageMut.isPending}>
+                <Button onClick={() => usageMut.mutate({ date: uForm.date, color: uForm.color, quantity_ml: Number(uForm.quantity_ml) || 0, note: uForm.note })} disabled={!uForm.quantity_ml || !uForm.color || usageMut.isPending}>
                   {usageMut.isPending ? "Saving…" : "Add Usage"}
                 </Button>
               </CardContent>
