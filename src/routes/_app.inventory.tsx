@@ -213,7 +213,7 @@ function InventoryPage() {
             </div>
           )}
           <DialogFooter>
-            <Button onClick={() => editMut.mutate()} disabled={editMut.isPending}>{editMut.isPending ? "Saving…" : "Save"}</Button>
+            <Button onClick={() => editRow && editMut.mutate({ fabric_id: editRow.fabric_id, client_name: editRow.client_name, fabric_type: editRow.fabric_type, received_date: editRow.received_date, total_yards_received: Number(editRow.total_yards_received) || 0, total_yards_printed: Number(editRow.total_yards_printed) || 0 })} disabled={editMut.isPending}>{editMut.isPending ? "Saving…" : "Save"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
