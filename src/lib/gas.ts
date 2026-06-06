@@ -16,11 +16,15 @@ export function clearGasUrl() {
 export async function gas<T = any>(action: string, payload: Record<string, any> = {}): Promise<T> {
   const url = getGasUrl();
   if (!url) throw new Error("Google Apps Script URL not configured. Go to /setup.");
+  // Send as application/x-www-form-urlencoded with a single `payload` field.
+  // This survives Apps Script's POST→302 redirect (the body is preserved as
+  // query-string-style params via e.parameter), where a JSON request body
+  // can be silently dropped by the browser on the redirected GET.
+  const body = new URLSearchParams({ payload: JSON.stringify({ action, ...payload }) });
   const res = await fetch(url, {
     method: "POST",
-    // text/plain avoids CORS preflight; GAS reads e.postData.contents
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ action, ...payload }),
+    headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+    body,
     redirect: "follow",
   });
   if (!res.ok) throw new Error(`Network error ${res.status}`);
