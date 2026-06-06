@@ -26,11 +26,11 @@ function EmployeesPage() {
   const [advAmount, setAdvAmount] = useState("");
 
   const addMut = useMutation({
-    mutationFn: () => gas("addEmployee", { ...form, base_salary: Number(form.base_salary) }),
-    onMutate: async () => {
+    mutationFn: (input: { name: string; role: string; base_salary: number }) => gas("addEmployee", input),
+    onMutate: async (input) => {
       const optimistic: Employee = {
-        emp_id: tempId("EMP"), name: form.name, role: form.role,
-        base_salary: Number(form.base_salary) || 0,
+        emp_id: tempId("EMP"), name: input.name, role: input.role,
+        base_salary: input.base_salary || 0,
         total_advance_given: 0, total_advance_deducted: 0,
       };
       setOpen(false); setForm({ name: "", role: "", base_salary: "" });
@@ -41,11 +41,11 @@ function EmployeesPage() {
     onSettled: () => qc.invalidateQueries({ queryKey: ["employees"] }),
   });
   const advMut = useMutation({
-    mutationFn: () => gas("addEmployeeAdvance", { emp_id: advOpen!.emp_id, amount: Number(advAmount) }),
-    onMutate: async () => {
-      if (!advOpen) return;
-      const emp = advOpen;
-      const amt = Number(advAmount) || 0;
+    mutationFn: (input: { emp_id: string; amount: number }) => gas("addEmployeeAdvance", input),
+    onMutate: async (input) => {
+      const emp = data.find((row) => row.emp_id === input.emp_id);
+      if (!emp) return;
+      const amt = input.amount || 0;
       setAdvOpen(null); setAdvAmount("");
       toast.success("Advance recorded");
       return await optimisticUpdate<Employee>(qc, ["employees"], "emp_id", emp.emp_id, {
@@ -83,7 +83,7 @@ function EmployeesPage() {
                 <div><Label>Base Salary (monthly)</Label><Input type="number" value={form.base_salary} onChange={e => setForm({ ...form, base_salary: e.target.value })} /></div>
               </div>
               <DialogFooter>
-                <Button onClick={() => addMut.mutate()} disabled={!form.name || addMut.isPending}>
+                <Button onClick={() => addMut.mutate({ name: form.name, role: form.role, base_salary: Number(form.base_salary) || 0 })} disabled={!form.name || addMut.isPending}>
                   {addMut.isPending ? "Saving…" : "Save"}
                 </Button>
               </DialogFooter>
@@ -140,7 +140,7 @@ function EmployeesPage() {
             <Input type="number" value={advAmount} onChange={(e) => setAdvAmount(e.target.value)} />
           </div>
           <DialogFooter>
-            <Button onClick={() => advMut.mutate()} disabled={!advAmount || advMut.isPending}>
+            <Button onClick={() => advOpen && advMut.mutate({ emp_id: advOpen.emp_id, amount: Number(advAmount) || 0 })} disabled={!advAmount || advMut.isPending}>
               {advMut.isPending ? "Saving…" : "Record Advance"}
             </Button>
           </DialogFooter>
