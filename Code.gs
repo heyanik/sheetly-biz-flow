@@ -432,10 +432,18 @@ function doPost(e) { ensureSheets_(); return handle_('POST', e); }
 function handle_(method, e) {
   try {
     var payload = {};
-    if (e && e.postData && e.postData.contents) {
+    // Preferred transport: form-encoded `payload=<json>` (survives the
+    // POST→302 redirect that Apps Script issues; some browsers drop the
+    // raw JSON body during that redirect).
+    if (e && e.parameter && e.parameter.payload) {
+      try { payload = JSON.parse(e.parameter.payload); } catch(_) { payload = {}; }
+    } else if (e && e.postData && e.postData.contents) {
       try { payload = JSON.parse(e.postData.contents); } catch(_) { payload = {}; }
     }
-    if (e && e.parameter) Object.keys(e.parameter).forEach(function (k) { if (payload[k]===undefined) payload[k] = e.parameter[k]; });
+    // Merge any remaining query params (without clobbering parsed payload keys).
+    if (e && e.parameter) Object.keys(e.parameter).forEach(function (k) {
+      if (k !== 'payload' && payload[k] === undefined) payload[k] = e.parameter[k];
+    });
     var action = payload.action;
     if (!action || !ACTIONS[action]) throw new Error('Unknown action: '+action);
     var data = ACTIONS[action](payload);
