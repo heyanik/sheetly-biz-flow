@@ -39,28 +39,24 @@ function InvoicesPage() {
   const clientFabrics = fabrics.filter(f => f.client_name === form.client_name);
 
   const addMut = useMutation({
-    mutationFn: () => gas<{ invoice_id: string }>("addInvoice", {
-      ...form,
-      yards_printed: Number(form.yards_printed),
-      total_amount: Number(form.total_amount),
-    }),
-    onMutate: async () => {
+    mutationFn: (input: Omit<Invoice, "invoice_id">) => gas<{ invoice_id: string }>("addInvoice", input),
+    onMutate: async (input) => {
       const optimistic: Invoice = {
-        invoice_id: tempId("INV"), date: form.date, client_name: form.client_name,
-        phone_number: form.phone_number, address: form.address,
-        fabric_id: form.fabric_id, yards_printed: Number(form.yards_printed) || 0,
-        total_amount: Number(form.total_amount) || 0, notes: form.notes,
+        invoice_id: tempId("INV"), date: input.date, client_name: input.client_name,
+        phone_number: input.phone_number, address: input.address,
+        fabric_id: input.fabric_id, yards_printed: Number(input.yards_printed) || 0,
+        total_amount: Number(input.total_amount) || 0, notes: input.notes,
       };
       toast.success("Invoice created");
       return await optimisticAppend<Invoice>(qc, ["invoices"], optimistic);
     },
-    onSuccess: async (d) => {
+    onSuccess: async (d, input) => {
       toast.success(`Invoice ${d.invoice_id} created`);
       const inv: Invoice = {
-        invoice_id: d.invoice_id, date: form.date, client_name: form.client_name,
-        phone_number: form.phone_number, address: form.address,
-        fabric_id: form.fabric_id, yards_printed: Number(form.yards_printed),
-        total_amount: Number(form.total_amount), notes: form.notes,
+        invoice_id: d.invoice_id, date: input.date, client_name: input.client_name,
+        phone_number: input.phone_number, address: input.address,
+        fabric_id: input.fabric_id, yards_printed: Number(input.yards_printed),
+        total_amount: Number(input.total_amount), notes: input.notes,
       };
       await printInvoicePdf(inv);
       setOpen(false);
@@ -181,7 +177,7 @@ function InvoicesPage() {
                 <div><Label>Notes</Label><Input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
               </div>
               <DialogFooter>
-                <Button onClick={() => addMut.mutate()} disabled={!form.client_name || !form.yards_printed || !form.total_amount || addMut.isPending}>
+                <Button onClick={() => addMut.mutate({ date: form.date, client_name: form.client_name, phone_number: form.phone_number, address: form.address, fabric_id: form.fabric_id, yards_printed: Number(form.yards_printed) || 0, total_amount: Number(form.total_amount) || 0, notes: form.notes })} disabled={!form.client_name || !form.yards_printed || !form.total_amount || addMut.isPending}>
                   {addMut.isPending ? "Saving…" : "Save & Print Invoice"}
                 </Button>
               </DialogFooter>
