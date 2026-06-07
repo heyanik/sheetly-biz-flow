@@ -1,7 +1,13 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, ClipboardCheck, Wallet, Package, FileText, Droplet, Settings, Building2, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardCheck, Wallet, Package, FileText, Droplet, Settings, Building2, LogOut, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearSession, getSession } from "@/lib/auth";
+import { useEffect, useState } from "react";
+import { needsRenewal, tryUnlock, nextMonth, daysLeftInMonth } from "@/lib/license";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -18,6 +24,28 @@ export function AppLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const session = typeof window !== "undefined" ? getSession() : null;
+  const [showRenewal, setShowRenewal] = useState(false);
+  const [renewOpen, setRenewOpen] = useState(false);
+  const [renewPw, setRenewPw] = useState("");
+
+  useEffect(() => {
+    const check = () => setShowRenewal(needsRenewal());
+    check();
+    const id = setInterval(check, 60_000);
+    return () => clearInterval(id);
+  }, [pathname]);
+
+  function submitRenew() {
+    if (tryUnlock(renewPw)) {
+      toast.success("Renewed for next month");
+      setRenewPw("");
+      setRenewOpen(false);
+      setShowRenewal(needsRenewal());
+    } else {
+      toast.error("Incorrect password");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex">
       <aside className="w-60 border-r bg-card flex flex-col">
@@ -67,6 +95,19 @@ export function AppLayout() {
         </div>
       </aside>
       <main className="flex-1 min-w-0 overflow-x-hidden">
+        {showRenewal && (
+          <button
+            onClick={() => setRenewOpen(true)}
+            className="w-full flex items-center gap-3 bg-destructive/10 border-b border-destructive/30 text-destructive px-6 py-3 text-sm hover:bg-destructive/15 transition"
+          >
+            <AlertTriangle className="size-4 shrink-0" />
+            <span className="text-left flex-1">
+              <strong>Renewal required.</strong> The app will lock in {daysLeftInMonth() + 1} day(s).
+              Enter the access password for <span className="font-mono">{nextMonth()}</span> to continue using it next month.
+            </span>
+            <span className="underline">Enter password</span>
+          </button>
+        )}
         <Outlet />
       </main>
       <a
@@ -76,6 +117,29 @@ export function AppLayout() {
       >
         Built By Anik
       </a>
+      <Dialog open={renewOpen} onOpenChange={setRenewOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Renew access</DialogTitle>
+            <DialogDescription>
+              Enter the access password for <span className="font-mono">{nextMonth()}</span>.
+              Contact your service provider to obtain it.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            type="password"
+            autoFocus
+            value={renewPw}
+            onChange={(e) => setRenewPw(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submitRenew()}
+            placeholder="Access password"
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setRenewOpen(false)}>Later</Button>
+            <Button onClick={submitRenew} disabled={!renewPw}>Unlock</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
