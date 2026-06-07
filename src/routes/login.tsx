@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { gas, getGasUrl } from "@/lib/gas";
 import { setSession, type AuthSession } from "@/lib/auth";
@@ -7,8 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { isUnlocked } from "@/lib/license";
 
 export const Route = createFileRoute("/login")({
+  beforeLoad: () => {
+    if (typeof window !== "undefined" && !isUnlocked()) throw redirect({ to: "/unlock" });
+  },
   head: () => ({ meta: [{ title: "Sign in — Textile ERP" }] }),
   component: Login,
 });

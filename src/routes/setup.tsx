@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,8 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getGasUrl, setGasUrl, gas } from "@/lib/gas";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import { isUnlocked } from "@/lib/license";
 
 export const Route = createFileRoute("/setup")({
+  beforeLoad: () => {
+    if (typeof window !== "undefined" && !isUnlocked()) throw redirect({ to: "/unlock" });
+  },
   head: () => ({ meta: [{ title: "Setup — Textile ERP" }] }),
   component: Setup,
 });
